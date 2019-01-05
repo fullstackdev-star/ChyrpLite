@@ -1,0 +1,19 @@
+#. This file is distributed under the same license as the Chyrp Lite package.
+
+#: feathers/quote/info.php:3
+#: feathers/quote/quote.php:7
+msgid "Quote"
+msgstr ""
+
+#: feathers/quote/info.php:6
+msgid "Post quotes and cite sources."
+msgstr ""
+
+#: feathers/quote/quote.php:13
+msgid "Source"
+msgstr ""
+
+#: feathers/quote/quote.php:26
+msgid "Quote can't be empty."
+msgstr ""
+

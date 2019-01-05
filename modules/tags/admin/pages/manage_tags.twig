@@ -1,0 +1,100 @@
+{% extends "layouts" ~ DIR ~ "default.twig" %}
+
+{% block title %}{{ "Manage Tags" | translate("tags") }}{% endblock %}
+
+{% block content %}
+<h2>{{ "Manage Tags" | translate("tags") }}</h2>
+<table>
+<thead> 
+<tr class="head">
+<th class="tag_name name main">{{ "Name" | translate("tags") }}</th>
+<th class="tag_count value">{{ "Posts Tagged" | translate("tags") }}</th>
+<th class="controls" colspan="2">{{ "Controls" | translate }}</th>
+</tr>   
+</thead>
+<tbody> 
+{% for tag in tag_cloud %}
+<tr>
+<td class="tag_name name main">
+<a class="tag" href="{{ url('manage_tags/query/' ~ (tag.clean | url_encode)) }}" title="{{ tag.title }}">{{ tag.name }}</a>
+</td>
+<td class="tag_count value">
+{{ tag.popularity }}
+</td>
+<td class="controls">
+{% if visitor.group.can("edit_post") %}
+<a class="tag_edit_link edit_link" href="{{ url('rename_tag/clean/' ~ (tag.clean | url_encode)) }}"><img src="{{ site.chyrp_url }}/admin/images/icons/edit.svg" alt="{{ 'edit' | translate }}"></a>
+{% endif %}
+</td>
+<td class="controls">
+{% if visitor.group.can("edit_post") %}
+<a class="tag_delete_link delete_link" href="{{ url('delete_tag/clean/' ~ (tag.clean | url_encode)) }}"><img src="{{ site.chyrp_url }}/admin/images/icons/delete.svg" alt="{{ 'delete' | translate }}"></a>
+{% endif %}
+</td>
+</tr>
+{% else %}
+<tr>
+<td class="placeholder">
+<img class="emblem" src="{{ site.chyrp_url }}/admin/images/icons/failure.svg" alt="">
+{{ "[None]" | translate }}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+<h2>{{ GET.query is not empty ? "Search Results" | translate : "Posts" | translate }}</h2>
+<form action="{{ url('bulk_tag') }}" method="post" accept-charset="UTF-8" data-toggler="tag_toggler">
+<table class="interactive">
+<thead>
+<tr class="head">
+<th class="toggler" id="tag_toggler"></th>
+<th class="post_title title main">{{ "Post" | translate }}</th>
+<th class="post_tags list">{{ "Tags" | translate("tags") }}</th>
+<th class="controls">{{ "Controls" | translate }}</th>
+</tr>
+</thead>
+<tbody>
+{% for post in posts.paginated %}
+<tr class="post">
+<td class="checkbox">
+<input type="checkbox" name="post[{{ loop.index0 }}]" value="{{ post.id }}" id="post_checkbox_{{ post.id }}" aria-label="{{ 'Select' | translate | fix(true) }}">
+</td>
+<td class="post_title title main">
+<a class="edit_tag" href="{{ post.url() }}">{{ post.title() | striptags | oneof("[Untitled]" | translate) | truncate(40, "&hellip;", true) }}</a>
+</td>
+<td class="post_tags list">
+{% for name, clean in post.tags %}
+<a class="tag" href="{{ url('manage_tags/query/' ~ (clean | url_encode)) }}">{{ name }}</a>
+{% endfor %}
+</td>
+<td class="controls">
+{% if post.editable() %}
+<a class="tags_edit_link edit_link" href="{{ url('edit_tags/id/' ~ post.id) }}">{{ '<img src="' ~ site.chyrp_url ~ '/admin/images/icons/edit.svg" alt="' ~ ('edit' | translate) ~ '">' }}</a>
+{% endif %}
+</td>
+</tr>
+{% else %}
+<tr>
+<td class="placeholder">
+<img class="emblem" src="{{ site.chyrp_url }}/admin/images/icons/failure.svg" alt="">
+{{ "[None]" | translate }}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+<div class="controls">
+<h4>{{ "Tag Selected Post(s) with:" | translate("tags") }}</h4>
+<input type="text" name="name" value="" id="name"  aria-label="{{ 'Name' | translate('tags') | fix(true) }}">
+<button type="submit">{{ "Tag" | translate("tags") }}</button>
+<input type="hidden" name="hash" value="{{ authenticate() }}" id="hash">
+</div>
+</form>
+{% if posts.paginated is not empty and posts.pages > 1 %}
+<div class="pagination">
+<span class="pages">{{ "Page %d of %s" | translate | format(posts.page, posts.final_link(posts.pages)) }}</span>
+{{ posts.prev_link }}
+{{ posts.next_link }}
+</div>
+{% endif %}
+{% endblock %}

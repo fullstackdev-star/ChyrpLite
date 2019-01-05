@@ -1,0 +1,83 @@
+{{ trigger.call("before_page_fields") }}
+{% set field_markdown = site.enable_markdown ? " data-markdown" : "" %}
+<p class="main_options">
+<label for="title">{{ "Title" | translate }}</label>
+<input class="text" type="text" name="title" value="{{ page is defined ? page.title | fix(true, true) : '' }}" id="title" required>
+</p>
+<p class="main_options">
+<label for="body">
+{% if field_markdown %}
+<a href="{{ url('help/id/markdown') }}" target="_blank" class="help emblem markdown"><img src="{{ site.chyrp_url }}/admin/images/icons/markdown.svg" alt="{{ 'Markdown' | translate }}"></a>
+{% endif %}
+{{ "Body" | translate }}
+</label>
+<textarea rows="12" name="body" id="body" data-preview{{ field_markdown }} required>{{ page is defined ? page.body | fix(false, true) : "" }}</textarea>
+</p>
+{{ trigger.call("after_page_fields") }}
+<div id="more_options" class="more_options">
+<p class="more_options_option">
+<label for="slug">
+<a href="{{ url('help/id/slugs') }}" rel="help" target="_blank" class="help emblem"><img src="{{ site.chyrp_url }}/admin/images/icons/help.svg" alt="{{ 'help' | translate }}"></a>
+{{ "Slug" | translate }}
+</label>
+<input class="text" type="text" name="slug" value="{{ page is defined ? page.clean | fix(true) : '' }}" id="slug" maxlength="80">
+</p>
+<p class="more_options_option">
+<label for="status">{{ "Status" | translate }}</label>
+<select name="status" id="status">
+{% set option_selected = page is defined ? (page.public and page.show_in_list) | selected(true) : " selected" %}
+<option value="listed"{{ option_selected }}>{{ "Public and visible in pages list" | translate }}</option>
+{% set option_selected = page is defined ? (page.public and not page.show_in_list) | selected(true) : "" %}
+<option value="public"{{ option_selected }}>{{ "Public" | translate }}</option>
+{% set option_selected = page is defined ? (not page.public and page.show_in_list) | selected(true) : "" %}
+<option value="teased"{{ option_selected }}>{{ "Private and visible in pages list" | translate }}</option>
+{% set option_selected = page is defined ? (not page.public and not page.show_in_list) | selected(true) : "" %}
+<option value="private"{{ option_selected }}>{{ "Private" | translate }}</option>
+</select>
+</p>
+<p class="more_options_option">
+<label for="list_priority">{{ "Priority in pages list" | translate }}</label>
+<select name="list_priority" id="list_priority">
+{% set option_selected = page is defined ? page.list_order | selected(0,1,2) : "" %}
+<option value="0"{{ option_selected }}>{{ "High" | translate }}</option>
+{% set option_selected = page is defined ? page.list_order | selected(3,4,5) : " selected" %}
+<option value="4"{{ option_selected }}>{{ "Medium" | translate }}</option>
+{% set option_selected = page is defined ? page.list_order | selected(6,7,8) : "" %}
+<option value="8"{{ option_selected }}>{{ "Low" | translate }}</option>
+</select>
+</p>
+<p class="more_options_option">
+<label for="parent_id">{{ "Parent" | translate }}</label>
+<select name="parent_id" id="parent_id">
+<option value="0">{{ "[None]" | translate }}</option>
+{% for item in theme.pages_list(0, page is defined ? page.id : null) %}
+{% set option_selected = page is defined ? page.parent_id | selected(item.id) : "" %}
+{% set option_contents = ("&nbsp;" | repeat((item.depth - 1) * 4)) ~ (item.title | striptags | fix) %}
+<option value="{{ item.id }}"{{ option_selected }}>{{ option_contents }}</option>
+{% endfor %}
+</select>
+</p>
+{% if route.action == "write_page" %}
+{{ trigger.call("new_page_options") }}
+{% else %}
+{{ trigger.call("edit_page_options", page) }}
+{% endif %}
+</div>
+<div class="buttons confirmation">
+{% if route.action == "write_page" %}
+<button type="submit" class="yay">
+<img src="{{ site.chyrp_url }}/admin/images/icons/success.svg" alt="">{{ "Publish" | translate }}
+</button>
+<button type="submit" name="private" value="true">
+<img src="{{ site.chyrp_url }}/admin/images/icons/save.svg" alt="">{{ "Save" | translate }}
+</button>
+{% else %}
+<button type="submit">
+<img src="{{ site.chyrp_url }}/admin/images/icons/success.svg" alt="">{{ "Save" | translate }}
+</button>
+<button type="submit" class="boo" name="cancel" value="true" data-confirm="">
+<img src="{{ site.chyrp_url }}/admin/images/icons/cancel.svg" alt="">{{ "Cancel" | translate }}
+</button>
+{% endif %}
+</div>
+</div>

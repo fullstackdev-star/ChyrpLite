@@ -1,0 +1,42 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: Marina Colucci\n"
+"Language: it_IT\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#. This file is distributed under the same license as the Chyrp Lite package.
+#: feathers/link/info.php:3
+msgid "Link"
+msgstr "Link"
+
+#: feathers/link/info.php:6
+msgid "Link to other sites and add an optional description."
+msgstr "Collega ad altri siti e aggiunge una descrizione facoltativa."
+
+#: feathers/link/link.php:6
+msgid "Title"
+msgstr "Titolo"
+
+#: feathers/link/link.php:11
+msgid "URL"
+msgstr "URL"
+
+#: feathers/link/link.php:15
+msgid "Description"
+msgstr "Descrizione"
+
+#: feathers/link/link.php:29 feathers/link/link.php:60
+msgid "URL can't be empty."
+msgstr "L'URL non può essere vuoto."
+
+#: feathers/link/link.php:32 feathers/link/link.php:63
+msgid "Invalid URL."
+msgstr "URL non valido."
