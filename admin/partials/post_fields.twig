@@ -1,0 +1,175 @@
+{{ trigger.call("before_post_fields", feather) }}
+{% for field in feather.fields %}
+{% if attribute(post, field.attr) is defined %}
+{% set field_value = attribute(post, field.attr) %}
+{% else %}
+{% set field_value = field.value is defined ? field.value : "" %}
+{% endif %}
+{% set field_preview = field.preview is defined and field.preview ? " data-preview" : "" %}
+{% set field_multiple = field.multiple is defined and field.multiple ? " multiple" : "" %}
+{% set field_accept = field.accept is defined ? ' accept="' ~ (field.accept | fix(true)) ~ '"' : "" %}
+{% if site.enable_markdown %}
+{% set field_markdown = field.filters is defined and (field.filters | contains("markup_text")) ? " data-markdown" : "" %}
+{% else %}
+{% set field_markdown = "" %}
+{% endif %}
+{% if post is not defined %}
+{% set field_required = field.optional is defined and field.optional ? "" : " required" %}
+{% else %}
+{% set field_required = field.type == "file" or field.optional is defined and field.optional ? "" : " required" %}
+{% endif %}
+{% set field_id = (field.attr ~ "_field") | fix(true) %}
+{% set field_name = (field_multiple is not empty ? field.attr ~ "[]" : field.attr) | fix(true) %}
+<p class="main_options">
+<label for="{{ field_id }}">
+{% if field_markdown is not empty %}
+<a href="{{ url('help/id/markdown') }}" target="_blank" class="help emblem markdown"><img src="{{ site.chyrp_url }}/admin/images/icons/markdown.svg" alt="{{ 'Markdown' | translate }}"></a>
+{% endif %}
+{% if field.help is defined %}
+<span class="sub">
+<a href="{{ url('help/id/' ~ (field.help | url_encode)) }}" rel="help" target="_blank" class="help emblem"><img src="{{ site.chyrp_url }}/admin/images/icons/help.svg" alt="{{ 'help' | translate }}"></a>
+</span>
+{% endif %}
+{{ field.label }}
+{% if field.optional is defined and field.optional %}
+<span class="sub">{{ "(optional)" | translate }}</span>
+{% endif %}
+{% if field.note is defined %}
+<span class="sub">{{ field.note }}</span>
+{% endif %}
+</label>
+{% if field.type == "text" %}
+<input id="{{ field_id }}" class="text" type="text" name="{{ field_name }}"{{ field_preview ~ field_markdown ~ field_required }} value="{{ field_value | fix(true, true) }}">
+{% elseif field.type == "file" %}
+<input id="{{ field_id }}" type="file" name="{{ field_name }}"{{ field_accept ~ field_multiple ~ field_required }} value="">
+{% elseif field.type == "text_block" %}
+<textarea id="{{ field_id }}" name="{{ field_name }}" rows="12"{{ field_preview ~ field_markdown ~ field_required }}>{{ field_value | fix(false, true) }}</textarea>
+{% elseif field.type == "checkbox" %}
+<input id="{{ field_id }}" type="checkbox" name="{{ field_name }}"{{ field.checked | checked }}>
+{% elseif field.type == "select" %}
+<select id="{{ field_id }}" name="{{ field_name }}">
+{% for value, name in field.options %}
+{% set option_selected = attribute(post, field.attr) is defined ? value | selected(attribute(post, field.attr)) : "" %}
+<option value="{{ value | fix(true) }}"{{ option_selected }}>{{ name | fix }}</option>
+{% endfor %}
+</select>
+{% endif %}
+{% if field.extra is defined %}
+{{ field.extra }}
+{% endif %}
+</p>
+{% endfor %}
+{{ trigger.call("after_post_fields", feather) }}
+<div id="more_options" class="more_options">
+{% if visitor.group.can("add_post") %}
+<p class="more_options_option">
+<label for="status">{{ "Status" | translate }}</label>
+<select id="status" name="status">
+{% set option_selected = post is defined ? post.status | selected("draft") : "" %}
+<option value="draft"{{ option_selected }}>{{ "Draft" | translate }}</option>
+{% set option_selected = post is defined ? post.status | selected("public") : " selected" %}
+<option value="public"{{ option_selected }}>{{ "Public" | translate }}</option>
+{% set option_selected = post is defined ? post.status | selected("private") : "" %}
+<option value="private"{{ option_selected }}>{{ "Private" | translate }}</option>
+{% set option_selected = post is defined ? post.status | selected("scheduled") : "" %}
+<option value="scheduled"{{ option_selected }}>{{ "Scheduled" | translate }}</option>
+<optgroup label="{{ "Visible only to a group of users:" | translate }}">
+{% set option_selected = post is defined ? post.status | selected("registered_only") : "" %}
+<option value="registered_only"{{ option_selected }}>{{ "All registered users" | translate }}</option>
+{% if groups is not empty %}
+{% for group in groups %}
+{% set option_selected = post is defined ? post.status | selected("{" ~ group.id ~ "}") : "" %}
+<option value="{{ '{' ~ group.id ~ '}' }}"{{ option_selected }}>{{ group.name | fix }}</option>
+{% endfor %}
+{% endif %}
+</optgroup>
+</select>
+</p>
+{% endif %}
+<p class="more_options_option">
+<label for="pinned">
+{{ "Pinned?" | translate }}
+<span class="sub">{{ "(shows this post above all others)" | translate }}</span>
+</label>
+<input id="pinned" type="checkbox" name="pinned"{{ post is defined ? post.pinned | checked : "" }}>
+</p>
+<p class="more_options_option">
+<label for="slug">
+<a href="{{ url('help/id/slugs') }}" rel="help" target="_blank" class="help emblem"><img src="{{ site.chyrp_url }}/admin/images/icons/help.svg" alt="{{ 'help' | translate }}"></a>
+{{ "Slug" | translate }}
+</label>
+<input id="slug" class="text" type="text" name="slug" value="{{ post is defined ? post.clean | fix(true) : '' }}" maxlength="80">
+</p>
+<p class="more_options_option">
+<label for="created_at">{{ "Timestamp" | translate }}</label>
+{% set post_created = post is defined and post.created_at is not empty ? post.created_at : now %}
+<input id="created_at" class="text" type="text" name="created_at" value="{{ post_created | dateformat('Y-m-d H:i:s') | fix(true) }}">
+</p>
+{% for field in options %}
+{% set field_value = field.value is defined ? field.value : "" %}
+{% set field_multiple = field.multiple is defined and field.multiple ? " multiple" : "" %}
+{% set field_accept = field.accept is defined ? ' accept="' ~ (field.accept | fix(true)) ~ '"' : "" %}
+{% set field_id = ((field.attr | replace({"[": "_", "]": ''})) ~ "_field") | fix(true) %}
+{% set field_name = (field_multiple is not empty ? field.attr ~ "[]" : field.attr) | fix(true) %}
+<p class="more_options_option">
+<label for="{{ field_id }}">
+{% if field.help is defined %}
+<span class="sub">
+<a href="{{ url('help/id/' ~ (field.help | url_encode)) }}" rel="help" target="_blank" class="help emblem"><img src="{{ site.chyrp_url }}/admin/images/icons/help.svg" alt="{{ 'help' | translate }}"></a>
+</span>
+{% endif %}
+{{ field.label }}
+{% if field.note is defined %}
+<span class="sub">{{ field.note }}</span>
+{% endif %}
+</label>
+{% if field.type == "text" %}
+<input id="{{ field_id }}" class="text" type="text" name="{{ field_name }}" value="{{ field_value | fix(true, true) }}">
+{% elseif field.type == "file" %}
+<input id="{{ field_id }}" type="file" name="{{ field_name }}"{{ field_accept ~ field_multiple }} value="">
+{% elseif field.type == "text_block" %}
+<textarea id="{{ field_id }}" name="{{ field_name }}" rows="12">{{ field_value | fix(false, true) }}</textarea>
+{% elseif field.type == "checkbox" %}
+<input id="{{ field_id }}" type="checkbox" name="{{ field_name }}"{{ field.checked | checked }}>
+{% elseif field.type == "select" %}
+<select id="{{ field_id }}" name="{{ field_name }}">
+{% for option in field.options %}
+{% set option_selected = option.selected | selected(true) %}
+<option value="{{ option.value | fix(true) }}"{{ option_selected }}>{{ option.name | fix }}</option>
+{% endfor %}
+</select>
+{% endif %}
+{% if field.extra is defined %}
+{{ field.extra }}
+{% endif %}
+</p>
+{% endfor %}
+</div>
+<div class="buttons confirmation">
+{% if route.action == "edit_post" %}
+{% if visitor.group.can("add_post") and post.status == "draft" %}
+<button type="submit" class="yay" name="publish" value="true">
+<img src="{{ site.chyrp_url }}/admin/images/icons/success.svg" alt="">{{ "Publish" | translate }}
+</button>
+<button type="submit">
+<img src="{{ site.chyrp_url }}/admin/images/icons/save.svg" alt="">{{ "Save" | translate }}
+</button>
+{% else %}
+<button type="submit">
+<img src="{{ site.chyrp_url }}/admin/images/icons/save.svg" alt="">{{ "Save" | translate }}
+</button>
+<button type="submit" class="boo" name="cancel" value="true" data-confirm="">
+<img src="{{ site.chyrp_url }}/admin/images/icons/cancel.svg" alt="">{{ "Cancel" | translate }}
+</button>
+{% endif %}
+{% else %}
+{% if visitor.group.can("add_post") %}
+<button type="submit" class="yay">
+<img src="{{ site.chyrp_url }}/admin/images/icons/success.svg" alt="">{{ "Publish" | translate }}
+</button>
+{% endif %}
+<button type="submit" name="draft" value="true">
+<img src="{{ site.chyrp_url }}/admin/images/icons/save.svg" alt="">{{ "Save" | translate }}
+</button>
+{% endif %}
+</div>

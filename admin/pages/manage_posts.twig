@@ -1,0 +1,68 @@
+{% extends "layouts" ~ DIR ~ "default.twig" %}
+
+{% block title %}{{ "Manage Posts" | translate }}{% endblock %}
+
+{% block content %}
+<form class="filters" action="{{ url('manage_posts') }}" method="post" accept-charset="UTF-8" role="search">
+<fieldset role="presentation">
+<h3>
+{{ "Search&hellip;" | translate }}
+<a href="{{ url('help/id/filtering_results') }}" rel="help" target="_blank" class="help emblem"><img src="{{ site.chyrp_url }}/admin/images/icons/help.svg" alt="{{ 'help' | translate }}"></a>
+</h3>
+<input class="text filter_text" type="text" name="query" value="{{ GET.query | fix(true) }}" id="query" aria-label="{{ 'Query' | translate | fix(true) }}">
+<button type="submit">{{ "Search" | translate }}</button>
+</fieldset>
+</form>
+<h2>{{ GET.query is not empty ? "Search Results" | translate : "Posts" | translate }}</h2>
+<table>
+<thead>
+<tr class="head">
+<th class="post_title title main">{{ "Title" | translate }}</th>
+<th class="post_date date">{{ "Posted" | translate }}</th>
+<th class="post_status status">{{ "Status" | translate }}</th>
+<th class="post_author value">{{ "Author" | translate }}</th>
+{{ trigger.call("manage_posts_column_header") }}
+<th class="controls" colspan="2">{{ "Controls" | translate }}</th>
+</tr>
+</thead>
+<tbody>
+{% for post in posts.paginated %}
+<tr id="post_{{ post.id }}" class="post {{ post.status_class }}">
+<td class="post_title title main">
+<a href="{{ post.url() }}">{{ post.title() | striptags | oneof("[Untitled]" | translate) | truncate(40, "&hellip;", true) }}</a>
+</td>
+<td class="post_date date">
+{{ post.created_at | dateformat }}
+</td>
+<td class="post_status status">
+{{ post.status_name }}
+</td>
+<td class="post_author value">
+{{ post.author.nick is defined ? post.author.nick : "" }}
+</td>
+{{ trigger.call("manage_posts_column", post) }}
+<td class="controls">
+{{ post.edit_link('<img src="' ~ site.chyrp_url ~ '/admin/images/icons/edit.svg" alt="' ~ ('edit' | translate) ~ '">') }}
+</td>
+<td class="controls">
+{{ post.delete_link('<img src="' ~ site.chyrp_url ~ '/admin/images/icons/delete.svg" alt="' ~ ('delete' | translate) ~ '">') }}
+</td>
+</tr>
+{% else %}
+<tr>
+<td class="placeholder">
+<img class="emblem" src="{{ site.chyrp_url }}/admin/images/icons/failure.svg" alt="">
+{{ "[None]" | translate }}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% if posts.paginated is defined and posts.pages > 1 %}
+<div class="pagination">
+<span class="pages">{{ "Page %d of %s" | translate | format(posts.page, posts.final_link(posts.pages)) }}</span>
+{{ posts.prev_link }}
+{{ posts.next_link }}
+</div>
+{% endif %}
+{% endblock %}
